@@ -13,7 +13,7 @@ from tkinter import messagebox, scrolledtext
 APP_DIR = Path(__file__).resolve().parent
 MAIN_FILE = APP_DIR / "main.py"
 ICON_FILE = APP_DIR / "icon.png"
-ICON_ICO  = APP_DIR / "icon.ico"   # kept for reference / Wine users
+ICON_ICO  = APP_DIR / "icon.ico"   # kept for reference
 MODEL_CACHE_DIR = Path.home() / ".u2net"
 ROOT_DIR = APP_DIR.parent
 LOCAL_CLEAN_TARGETS = [
@@ -193,7 +193,7 @@ def python_gui_executable() -> str:
 
 
 def creation_flags() -> int:
-    """No-op on Linux — subprocess flags for hiding console windows are Windows-only."""
+    """No-op on Linux — Windows-only flag."""
     return 0
 
 
@@ -213,9 +213,9 @@ class Assistant(tk.Tk):
         self._center()
         if ICON_FILE.exists():
             try:
-                img = tk.PhotoImage(file=str(ICON_FILE))
-                self.iconphoto(True, img)
-                self._icon_ref = img  # prevent GC
+                _ico = tk.PhotoImage(file=str(ICON_FILE))
+                self.iconphoto(True, _ico)
+                self._icon_ref = _ico
             except Exception:
                 pass
         self._build()
@@ -225,7 +225,7 @@ class Assistant(tk.Tk):
             self.after(180, self.open_uninstall_dialog)
 
     def _create_desktop_entry(self) -> None:
-        """Create a .desktop launcher entry in ~/.local/share/applications/ (runs silently once)."""
+        """Create a .desktop launcher in ~/.local/share/applications/ (runs silently once)."""
         apps_dir = Path.home() / ".local" / "share" / "applications"
         desktop_file = apps_dir / "background-remover-studio.desktop"
         if desktop_file.exists():
@@ -237,21 +237,29 @@ class Assistant(tk.Tk):
             icon = str(ICON_FILE.resolve()) if ICON_FILE.exists() else "image-x-generic"
             work = str(APP_DIR.resolve())
             entry = (
-                "[Desktop Entry]\n"
-                "Version=1.0\n"
-                "Type=Application\n"
-                "Name=Background Remover Studio\n"
-                "Comment=Free local background remover — no uploads, no account\n"
-                f"Exec={python} {script}\n"
-                f"Icon={icon}\n"
-                f"Path={work}\n"
-                "Terminal=false\n"
-                "Categories=Graphics;Photography;\n"
+                "[Desktop Entry]
+"
+                "Version=1.0
+"
+                "Type=Application
+"
+                "Name=Background Remover Studio
+"
+                "Comment=Free local background remover — no uploads, no account
+"
+                f"Exec={python} {script}
+"
+                f"Icon={icon}
+"
+                f"Path={work}
+"
+                "Terminal=false
+"
+                "Categories=Graphics;Photography;
+"
             )
             desktop_file.write_text(entry, encoding="utf-8")
-            # Make executable so GNOME/KDE recognises it
             desktop_file.chmod(0o755)
-            # Notify the desktop environment (best-effort)
             subprocess.run(
                 ["update-desktop-database", str(apps_dir)],
                 capture_output=True, timeout=5,
@@ -521,12 +529,11 @@ class Assistant(tk.Tk):
             w.bind("<Leave>", _card_leave)
             w.bind("<Button-1>", lambda e: _do_launch())
 
-        # — Web UI card (coming soon) ——————————
+        # — Web UI card (coming soon) ————————————————————————
         DIMMED_BG = "#0D1117"
         web = tk.Frame(row, bg=DIMMED_BG, padx=20, pady=20,
                        highlightthickness=2, highlightbackground=BORDER)
         web.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
-
         tk.Label(web, text=self.t("launch_web"),
                  bg=DIMMED_BG, fg=MUTED, font=("Segoe UI", 12, "bold")).pack(anchor="w")
         tk.Label(web, text=self.t("launch_web_sub"),
