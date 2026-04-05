@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Background Remover Studio
+GenericName=Background Remover
+Comment=Free local background remover — no uploads, no account, no limits
+Exec=bash -c 'cd "%k%/../" && ./start.sh'
+Icon=image-x-generic
+Terminal=false
+Categories=Graphics;Photography;2DGraphics;RasterGraphics;
+Keywords=background;remover;transparent;png;cutout;rembg;
+StartupNotify=true
