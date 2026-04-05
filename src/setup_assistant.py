@@ -294,15 +294,15 @@ class Assistant(tk.Tk):
         header.columnconfigure(0, weight=1)
         title_wrap = tk.Frame(header, bg=CARD)
         title_wrap.grid(row=0, column=0, sticky="w")
-        self.lbl_title = tk.Label(title_wrap, bg=CARD, fg=TEXT, font=("Segoe UI", 22, "bold"))
+        self.lbl_title = tk.Label(title_wrap, bg=CARD, fg=TEXT, font=("Sans", 22, "bold"))
         self.lbl_title.pack(anchor="w")
-        self.lbl_subtitle = tk.Label(title_wrap, bg=CARD, fg=DIM, font=("Segoe UI", 10))
+        self.lbl_subtitle = tk.Label(title_wrap, bg=CARD, fg=DIM, font=("Sans", 10))
         self.lbl_subtitle.pack(anchor="w", pady=(6, 0))
         lang_wrap = tk.Frame(header, bg=CARD, padx=10, pady=8, highlightthickness=1, highlightbackground=BORDER)
         lang_wrap.grid(row=0, column=1, sticky="e")
         self.btn_lang_en = self._button(lang_wrap, "EN", lambda: self.set_language("en"), small=True)
         self.btn_lang_en.pack(side="left")
-        tk.Label(lang_wrap, text="|", bg=CARD, fg=MUTED, font=("Segoe UI", 9)).pack(side="left", padx=6)
+        tk.Label(lang_wrap, text="|", bg=CARD, fg=MUTED, font=("Sans", 9)).pack(side="left", padx=6)
         self.btn_lang_pt = self._button(lang_wrap, "PTBR", lambda: self.set_language("pt"), small=True)
         self.btn_lang_pt.pack(side="left")
 
@@ -314,19 +314,19 @@ class Assistant(tk.Tk):
         left.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
         right = tk.Frame(info, bg=CARD_ALT, padx=18, pady=16, highlightthickness=1, highlightbackground=BORDER)
         right.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
-        self.lbl_env = tk.Label(left, bg=CARD_ALT, fg=TEXT, font=("Segoe UI", 12, "bold"))
+        self.lbl_env = tk.Label(left, bg=CARD_ALT, fg=TEXT, font=("Sans", 12, "bold"))
         self.lbl_env.pack(anchor="w")
-        self.lbl_status = tk.Label(left, bg=CARD_ALT, fg=DIM, font=("Segoe UI", 10), justify="left", wraplength=300)
+        self.lbl_status = tk.Label(left, bg=CARD_ALT, fg=DIM, font=("Sans", 10), justify="left", wraplength=300)
         self.lbl_status.pack(anchor="w", pady=(10, 4))
-        self.lbl_python = tk.Label(left, bg=CARD_ALT, fg=MUTED, font=("Segoe UI", 9), justify="left", wraplength=300)
+        self.lbl_python = tk.Label(left, bg=CARD_ALT, fg=MUTED, font=("Sans", 9), justify="left", wraplength=300)
         self.lbl_python.pack(anchor="w")
-        self.lbl_deps = tk.Label(left, bg=CARD_ALT, fg=MUTED, font=("Segoe UI", 9), justify="left", wraplength=300)
+        self.lbl_deps = tk.Label(left, bg=CARD_ALT, fg=MUTED, font=("Sans", 9), justify="left", wraplength=300)
         self.lbl_deps.pack(anchor="w", pady=(6, 0))
-        self.lbl_notes = tk.Label(right, bg=CARD_ALT, fg=TEXT, font=("Segoe UI", 12, "bold"))
+        self.lbl_notes = tk.Label(right, bg=CARD_ALT, fg=TEXT, font=("Sans", 12, "bold"))
         self.lbl_notes.pack(anchor="w")
         self.note_labels = []
         for _ in range(4):
-            lbl = tk.Label(right, bg=CARD_ALT, fg=DIM, font=("Segoe UI", 9), justify="left", anchor="w", wraplength=300)
+            lbl = tk.Label(right, bg=CARD_ALT, fg=DIM, font=("Sans", 9), justify="left", anchor="w", wraplength=300)
             lbl.pack(anchor="w", pady=(8, 0))
             self.note_labels.append(lbl)
 
@@ -347,7 +347,7 @@ class Assistant(tk.Tk):
         log_card.grid(row=3, column=0, sticky="nsew", pady=(14, 0))
         log_card.columnconfigure(0, weight=1)
         log_card.rowconfigure(1, weight=1)
-        self.lbl_activity = tk.Label(log_card, bg=CARD, fg=TEXT, font=("Segoe UI", 12, "bold"))
+        self.lbl_activity = tk.Label(log_card, bg=CARD, fg=TEXT, font=("Sans", 12, "bold"))
         self.lbl_activity.grid(row=0, column=0, sticky="w")
         self.log = scrolledtext.ScrolledText(log_card, bg="#0E131A", fg="#D7E3F0", insertbackground=TEXT, font=("Consolas", 9), relief="flat", bd=0, wrap="word", height=12)
         self.log.grid(row=1, column=0, sticky="nsew", pady=(12, 0))
@@ -357,7 +357,7 @@ class Assistant(tk.Tk):
         btn = tk.Button(parent, text=text, command=command, bg=ACCENT if primary else CARD_ALT, fg="#08131F" if primary else TEXT,
                         activebackground=ACCENT_HOVER if primary else "#202938", activeforeground="#08131F" if primary else TEXT,
                         highlightthickness=1, highlightbackground=BORDER, highlightcolor=BORDER, relief="flat", bd=0,
-                        font=("Segoe UI", 9 if small else 10, "bold"), padx=10 if small else 12, pady=5 if small else 11, cursor="hand2")
+                        font=("Sans", 9 if small else 10, "bold"), padx=10 if small else 12, pady=5 if small else 11, cursor="hand2")
         return btn
 
     def apply_texts(self, initial=False):
@@ -462,9 +462,9 @@ class Assistant(tk.Tk):
 
         # ── Header ────────────────────────────────────────────────────────────
         tk.Label(wrap, text=self.t("launch_pick_title"),
-                 bg=BG, fg=TEXT, font=("Segoe UI", 15, "bold")).pack(anchor="w")
+                 bg=BG, fg=TEXT, font=("Sans", 15, "bold")).pack(anchor="w")
         tk.Label(wrap, text=self.t("launch_pick_sub"),
-                 bg=BG, fg=DIM, font=("Segoe UI", 9)).pack(anchor="w", pady=(4, 18))
+                 bg=BG, fg=DIM, font=("Sans", 9)).pack(anchor="w", pady=(4, 18))
 
         # ── Cards row ─────────────────────────────────────────────────────────
         row = tk.Frame(wrap, bg=BG)
@@ -479,10 +479,10 @@ class Assistant(tk.Tk):
         desktop.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
 
         tk.Label(desktop, text=self.t("launch_desktop"),
-                 bg=CARD_ALT, fg=TEXT, font=("Segoe UI", 12, "bold"),
+                 bg=CARD_ALT, fg=TEXT, font=("Sans", 12, "bold"),
                  cursor="hand2").pack(anchor="w")
         tk.Label(desktop, text=self.t("launch_desktop_sub"),
-                 bg=CARD_ALT, fg=DIM, font=("Segoe UI", 9), justify="left",
+                 bg=CARD_ALT, fg=DIM, font=("Sans", 9), justify="left",
                  wraplength=160, cursor="hand2").pack(anchor="w", pady=(6, 0))
 
         # hover effect helpers
@@ -535,12 +535,12 @@ class Assistant(tk.Tk):
                        highlightthickness=2, highlightbackground=BORDER)
         web.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
         tk.Label(web, text=self.t("launch_web"),
-                 bg=DIMMED_BG, fg=MUTED, font=("Segoe UI", 12, "bold")).pack(anchor="w")
+                 bg=DIMMED_BG, fg=MUTED, font=("Sans", 12, "bold")).pack(anchor="w")
         tk.Label(web, text=self.t("launch_web_sub"),
-                 bg=DIMMED_BG, fg="#455060", font=("Segoe UI", 9), justify="left",
+                 bg=DIMMED_BG, fg="#455060", font=("Sans", 9), justify="left",
                  wraplength=160).pack(anchor="w", pady=(6, 0))
         badge = tk.Label(web, text=f"  {self.t('launch_soon')}  ",
-                         bg="#1C2330", fg=WARNING, font=("Segoe UI", 8, "bold"),
+                         bg="#1C2330", fg=WARNING, font=("Sans", 8, "bold"),
                          padx=0, pady=3,
                          highlightthickness=1, highlightbackground="#2A3445")
         badge.pack(anchor="w", pady=(12, 0))
@@ -553,7 +553,7 @@ class Assistant(tk.Tk):
                   activebackground="#202938", activeforeground=TEXT,
                   highlightthickness=1, highlightbackground=BORDER,
                   relief="flat", bd=0,
-                  font=("Segoe UI", 9, "bold"), padx=14, pady=7,
+                  font=("Sans", 9, "bold"), padx=14, pady=7,
                   cursor="hand2").pack(side="right")
 
         dialog.update_idletasks()
@@ -608,30 +608,30 @@ class Assistant(tk.Tk):
                 pass
         card = tk.Frame(dialog, bg=CARD, padx=18, pady=18, highlightthickness=1, highlightbackground=BORDER)
         card.pack(fill="both", expand=True, padx=18, pady=18)
-        tk.Label(card, text=self.t("dlg_title"), bg=CARD, fg=TEXT, font=("Segoe UI", 18, "bold")).pack(anchor="w")
-        tk.Label(card, text=self.t("dlg_sub"), bg=CARD, fg=DIM, font=("Segoe UI", 10), justify="left", wraplength=460).pack(anchor="w", pady=(8, 16))
+        tk.Label(card, text=self.t("dlg_title"), bg=CARD, fg=TEXT, font=("Sans", 18, "bold")).pack(anchor="w")
+        tk.Label(card, text=self.t("dlg_sub"), bg=CARD, fg=DIM, font=("Sans", 10), justify="left", wraplength=460).pack(anchor="w", pady=(8, 16))
         local_var = tk.BooleanVar(value=True)
         pkg_var = tk.BooleanVar(value=False)
         cache_var = tk.BooleanVar(value=False)
         self._check(card, local_var, self.t("local_title"), self.t("local_sub"))
         self._check(card, pkg_var, self.t("pkg_title"), self.t("pkg_sub"))
         self._check(card, cache_var, self.t("cache_title"), self.t("cache_sub", path=MODEL_CACHE_DIR))
-        tk.Label(card, text=self.t("dlg_note"), bg=CARD, fg=MUTED, font=("Segoe UI", 9), justify="left", wraplength=460).pack(anchor="w", pady=(14, 0))
+        tk.Label(card, text=self.t("dlg_note"), bg=CARD, fg=MUTED, font=("Sans", 9), justify="left", wraplength=460).pack(anchor="w", pady=(14, 0))
         footer = tk.Frame(card, bg=CARD)
         footer.pack(fill="x", pady=(16, 0))
         tk.Button(footer, text=self.t("cancel"), command=dialog.destroy, bg=CARD_ALT, fg=TEXT, activebackground="#202938", activeforeground=TEXT,
-                  highlightthickness=1, highlightbackground=BORDER, relief="flat", bd=0, font=("Segoe UI", 10, "bold"), padx=14, pady=9, cursor="hand2").pack(side="right")
+                  highlightthickness=1, highlightbackground=BORDER, relief="flat", bd=0, font=("Sans", 10, "bold"), padx=14, pady=9, cursor="hand2").pack(side="right")
         tk.Button(footer, text=self.t("continue"), command=lambda: self._confirm_uninstall(dialog, local_var.get(), pkg_var.get(), cache_var.get()),
                   bg=ACCENT, fg="#08131F", activebackground=ACCENT_HOVER, activeforeground="#08131F",
-                  highlightthickness=1, highlightbackground=BORDER, relief="flat", bd=0, font=("Segoe UI", 10, "bold"), padx=16, pady=9, cursor="hand2").pack(side="right", padx=(0, 10))
+                  highlightthickness=1, highlightbackground=BORDER, relief="flat", bd=0, font=("Sans", 10, "bold"), padx=16, pady=9, cursor="hand2").pack(side="right", padx=(0, 10))
         self._center_window(dialog)
 
     def _check(self, parent, variable, title, sub):
         wrap = tk.Frame(parent, bg=CARD_ALT, padx=14, pady=12, highlightthickness=1, highlightbackground=BORDER)
         wrap.pack(fill="x", pady=(0, 10))
         tk.Checkbutton(wrap, text=title, variable=variable, bg=CARD_ALT, fg=TEXT, selectcolor=CARD_ALT, activebackground=CARD_ALT,
-                       activeforeground=TEXT, highlightthickness=0, bd=0, font=("Segoe UI", 10, "bold"), anchor="w").pack(anchor="w")
-        tk.Label(wrap, text=sub, bg=CARD_ALT, fg=DIM, font=("Segoe UI", 9), justify="left", wraplength=420).pack(anchor="w", pady=(6, 0))
+                       activeforeground=TEXT, highlightthickness=0, bd=0, font=("Sans", 10, "bold"), anchor="w").pack(anchor="w")
+        tk.Label(wrap, text=sub, bg=CARD_ALT, fg=DIM, font=("Sans", 9), justify="left", wraplength=420).pack(anchor="w", pady=(6, 0))
 
     def _confirm_uninstall(self, dialog, remove_local, remove_pkg, remove_cache):
         parts = []

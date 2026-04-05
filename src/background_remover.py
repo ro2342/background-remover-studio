@@ -31,6 +31,31 @@ rembg_remove = None
 rembg_pronto = False
 rembg_new_session = None
 
+# ── Fonte multiplataforma ─────────────────────────────────────
+import platform as _platform
+def _ui_font(size: int, weight: str = "normal") -> tuple:
+    """Retorna uma tupla de fonte adequada para o sistema atual."""
+    system = _platform.system()
+    if system == "Windows":
+        family = "Segoe UI"
+    elif system == "Darwin":
+        family = "SF Pro Text"
+    else:
+        # Linux: tenta Inter, DejaVu Sans, Liberation Sans, Cantarell na ordem
+        family = "Sans"   # tkinter mapeia para o sans-serif do sistema (Liberation/DejaVu/Cantarell)
+    return (family, size, weight)
+
+# Atalhos para os tamanhos mais usados no app
+F_XS   = lambda w="normal": _ui_font(8,  w)
+F_SM   = lambda w="normal": _ui_font(9,  w)
+F_MD   = lambda w="normal": _ui_font(10, w)
+F_LG   = lambda w="normal": _ui_font(11, w)
+F_XL   = lambda w="normal": _ui_font(12, w)
+F_2XL  = lambda w="normal": _ui_font(13, w)
+F_3XL  = lambda w="normal": _ui_font(18, w)
+F_4XL  = lambda w="normal": _ui_font(22, w)
+F_HERO = lambda w="normal": _ui_font(24, w)
+
 # ── Cores ────────────────────────────────────────────────────
 BG          = "#0B0F14"
 TOP_BG      = "#0E131A"
@@ -1392,10 +1417,12 @@ class App(TK_ROOT):
         self.configure(bg=BG)
         sw = self.winfo_screenwidth()
         sh = self.winfo_screenheight()
-        default_w = max(1160, min(1360, sw - 120))
-        default_h = max(720, min(800, sh - 150))
+        # Janela responsiva: ocupa ~85% da tela, respeitando mínimos menores no Linux
+        default_w = max(1000, min(1360, sw - 100))
+        default_h = max(680, min(820, sh - 120))
         self.geometry(f"{default_w}x{default_h}")
-        self.minsize(min(default_w, 980), min(default_h, 660))
+        # Mínimo menor pra caber em telas 1366x768 (laptops comuns)
+        self.minsize(900, 600)
 
         from _paths import resource as _resource
         icon_path = _resource("icon.png")
@@ -1534,7 +1561,7 @@ class App(TK_ROOT):
                     bordercolor=CARD2, arrowcolor=SOFT_TEXT, gripcount=0)
         s.configure("Studio.TNotebook", background=BG, borderwidth=0)
         s.configure("Studio.TNotebook.Tab", background=CARD2, foreground=DIM,
-                    padding=[16,8], font=("Segoe UI",9,"bold"), borderwidth=0)
+                    padding=[16,8], font=_ui_font(9, "bold"), borderwidth=0)
         s.map("Studio.TNotebook.Tab",
               background=[("selected", CARD)],
               foreground=[("selected", ACCENT_CYAN)])
@@ -1561,9 +1588,13 @@ class App(TK_ROOT):
         shell = tk.Frame(self, bg=BG, padx=14, pady=14)
         shell.pack(fill="both", expand=True)
         self._shell = shell
-        shell.columnconfigure(0, weight=0, minsize=220)
-        shell.columnconfigure(1, weight=1, minsize=420)
-        shell.columnconfigure(2, weight=0, minsize=286)
+        # Colunas responsivas: painéis laterais encolhem em telas menores
+        _left_min   = max(180, min(220, sw // 7))
+        _center_min = max(320, sw - _left_min * 2 - 200)
+        _right_min  = max(240, min(286, sw // 6))
+        shell.columnconfigure(0, weight=0, minsize=_left_min)
+        shell.columnconfigure(1, weight=1, minsize=_center_min)
+        shell.columnconfigure(2, weight=0, minsize=_right_min)
         shell.rowconfigure(1, weight=1)
 
         top = tk.Frame(shell, bg=TOP_BG, padx=24, pady=18,
@@ -1572,10 +1603,10 @@ class App(TK_ROOT):
         title_wrap = tk.Frame(top, bg=TOP_BG)
         title_wrap.pack(side="left")
         self._lbl_title = tk.Label(title_wrap, text=self._t("header_title"),
-                                   font=("Segoe UI",24,"bold"), bg=TOP_BG, fg=TEXT)
+                                   font=_ui_font(24, "bold"), bg=TOP_BG, fg=TEXT)
         self._lbl_title.pack(anchor="w")
         self._lbl_subtitle = tk.Label(title_wrap, text=self._t("header_subtitle"),
-                                      font=("Segoe UI",10), bg=TOP_BG, fg=DIM)
+                                      font=_ui_font(10), bg=TOP_BG, fg=DIM)
         self._lbl_subtitle.pack(anchor="w", pady=(4,0))
 
         top_actions = tk.Frame(top, bg=TOP_BG)
@@ -1586,12 +1617,12 @@ class App(TK_ROOT):
         lang_wrap.pack(side="left", padx=(0,12))
         self._btn_lang_en = self._mkbtn(lang_wrap, "EN", lambda: self._set_language("en"),
                                         bg=CARD2, hover="#263446", pady=4,
-                                        font=("Segoe UI",9,"bold"))
+                                        font=_ui_font(9, "bold"))
         self._btn_lang_en.pack(side="left")
-        tk.Label(lang_wrap, text="|", font=("Segoe UI",9), bg=TOP_BG, fg=MUTED).pack(side="left", padx=6)
+        tk.Label(lang_wrap, text="|", font=_ui_font(9), bg=TOP_BG, fg=MUTED).pack(side="left", padx=6)
         self._btn_lang_pt = self._mkbtn(lang_wrap, "PTBR", lambda: self._set_language("pt"),
                                         bg=CARD2, hover="#263446", pady=4,
-                                        font=("Segoe UI",9,"bold"))
+                                        font=_ui_font(9, "bold"))
         self._btn_lang_pt.pack(side="left")
 
         mode_wrap = tk.Frame(top, bg=TOP_BG, padx=14, pady=10,
@@ -1599,11 +1630,11 @@ class App(TK_ROOT):
         mode_wrap.pack(in_=top_actions, side="left")
         text_wrap = tk.Frame(mode_wrap, bg=TOP_BG)
         text_wrap.pack(side="left", padx=(0,10))
-        self._lbl_mode_title = tk.Label(text_wrap, text=self._t("simple_mode"), font=("Segoe UI",9,"bold"),
+        self._lbl_mode_title = tk.Label(text_wrap, text=self._t("simple_mode"), font=_ui_font(9, "bold"),
                                         bg=TOP_BG, fg=TEXT)
         self._lbl_mode_title.pack(anchor="w")
         self._lbl_mode_sub = tk.Label(text_wrap, text=self._t("simple_mode_sub"),
-                                      font=("Segoe UI",8), bg=TOP_BG, fg=MUTED)
+                                      font=_ui_font(8), bg=TOP_BG, fg=MUTED)
         self._lbl_mode_sub.pack(anchor="w", pady=(2,0))
         self._mode_toggle_canvas = tk.Canvas(
             mode_wrap, width=46, height=28, bg=TOP_BG, highlightthickness=0, bd=0, cursor="hand2"
@@ -1639,11 +1670,11 @@ class App(TK_ROOT):
         foot = tk.Frame(shell, bg=TOP_BG, pady=10, padx=14,
                         highlightthickness=1, highlightbackground=BORDER)
         foot.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(14,0))
-        self._lbl_status = tk.Label(foot, text="", font=("Segoe UI",9),
+        self._lbl_status = tk.Label(foot, text="", font=_ui_font(9),
                                     bg=TOP_BG, fg=DIM)
         self._lbl_status.pack(side="left", padx=14)
         self._lbl_count = tk.Label(foot, text="0/0",
-                                   font=("Segoe UI",9), bg=TOP_BG, fg=DIM)
+                                   font=_ui_font(9), bg=TOP_BG, fg=DIM)
         self._lbl_count.pack(side="right", padx=14)
         self._prog = ttk.Progressbar(foot, length=160, mode="determinate",
                                      style="Studio.Horizontal.TProgressbar")
@@ -1659,24 +1690,24 @@ class App(TK_ROOT):
         top_row.grid(row=0, column=0, sticky="ew")
         top_row.columnconfigure(0, weight=1)
         self._lbl_left_title = tk.Label(top_row, text=self._t("your_images"),
-                                        font=("Segoe UI",12,"bold"), bg=CARD, fg=TEXT)
+                                        font=_ui_font(12, "bold"), bg=CARD, fg=TEXT)
         self._lbl_left_title.grid(row=0, column=0, sticky="w")
 
         actions = tk.Frame(top_row, bg=CARD)
         actions.grid(row=1, column=0, sticky="w", pady=(10,0))
         self._btn_add = self._mkbtn(actions, self._t("add"), self._add_files, bg=CARD2, hover="#202938",
-                                    pady=5, font=("Segoe UI",8,"bold"), padx=7)
+                                    pady=5, font=_ui_font(8, "bold"), padx=7)
         self._btn_add.pack(side="left", padx=(0,4))
         self._btn_folder = self._mkbtn(actions, self._t("folder"), self._add_folder, bg=CARD2, hover="#202938",
-                                       pady=5, font=("Segoe UI",8,"bold"), padx=7)
+                                       pady=5, font=_ui_font(8, "bold"), padx=7)
         self._btn_folder.pack(side="left", padx=(0,4))
         self._btn_remove_file = self._mkbtn(actions, self._t("remove"), self._remove_selected_file,
-                                            bg=CARD2, hover="#3A2430", pady=5, font=("Segoe UI",8,"bold"), padx=7)
+                                            bg=CARD2, hover="#3A2430", pady=5, font=_ui_font(8, "bold"), padx=7)
         self._btn_remove_file.pack(side="left")
         self._set_button_enabled(self._btn_remove_file, False)
 
         self._lbl_left_sub = tk.Label(p, text=self._t("your_images_sub"),
-                                      font=("Segoe UI",9), bg=CARD, fg=DIM,
+                                      font=_ui_font(9), bg=CARD, fg=DIM,
                                       wraplength=230, justify="left", anchor="w")
         self._lbl_left_sub.grid(row=1, column=0, sticky="ew", pady=(10,12))
 
@@ -1711,16 +1742,16 @@ class App(TK_ROOT):
         export_card.grid(row=3, column=0, sticky="ew", pady=(14,0))
         export_card.columnconfigure(0, weight=1)
         self._lbl_export_title = tk.Label(export_card, text=self._t("export"),
-                 font=("Segoe UI",11,"bold"), bg=CARD2, fg=TEXT)
+                 font=_ui_font(11, "bold"), bg=CARD2, fg=TEXT)
         self._lbl_export_title.grid(
                      row=0, column=0, sticky="w", padx=14, pady=(14,4))
         self._lbl_out = tk.Label(export_card, text=self._t("same_folder"),
-                                 font=("Segoe UI",9), bg=CARD2, fg=DIM,
+                                 font=_ui_font(9), bg=CARD2, fg=DIM,
                                  wraplength=220, justify="left", anchor="w")
         self._lbl_out.grid(row=1, column=0, sticky="ew", padx=14)
         self._btn_change_folder = self._mkbtn(export_card, self._t("change_folder"), self._choose_out,
                                               bg=CARD, hover="#202938", pady=6,
-                                              font=("Segoe UI",9,"bold"))
+                                              font=_ui_font(9, "bold"))
         self._btn_change_folder.grid(row=2, column=0, sticky="ew", padx=14, pady=(12,0))
         self._export_combo = ttk.Combobox(
             export_card,
@@ -1733,12 +1764,12 @@ class App(TK_ROOT):
         self._export_combo.bind("<<ComboboxSelected>>", self._on_export_format_change)
         self._btn_export_sidebar = self._mkbtn(export_card, self._t("export_file"), self._export_current,
                                                bg=CARD, hover="#202938", pady=10,
-                                               font=("Segoe UI",10,"bold"))
+                                               font=_ui_font(10, "bold"))
         self._btn_export_sidebar.grid(row=4, column=0, sticky="ew", padx=14, pady=(0,14))
         self._btn_export_sidebar.config(state="disabled")
         self._btn_copy_sidebar = self._mkbtn(export_card, self._t("copy_image"), self._copy_current_to_clipboard,
                                              bg=CARD, hover="#202938", pady=9,
-                                             font=("Segoe UI",9,"bold"))
+                                             font=_ui_font(9, "bold"))
         self._btn_copy_sidebar.grid(row=5, column=0, sticky="ew", padx=14, pady=(0,14))
         self._btn_copy_sidebar.config(state="disabled")
 
@@ -1747,18 +1778,18 @@ class App(TK_ROOT):
         top_row.grid(row=0, column=0, sticky="ew")
         top_row.columnconfigure(1, weight=1)
         self._lbl_preview_title = tk.Label(top_row, text=self._t("preview"),
-                                           font=("Segoe UI",12,"bold"), bg=CARD, fg=TEXT)
+                                           font=_ui_font(12, "bold"), bg=CARD, fg=TEXT)
         self._lbl_preview_title.grid(row=0, column=0, sticky="w")
         self._lbl_preview_sub = tk.Label(top_row, text=self._t("preview_sub"),
-                                         font=("Segoe UI",9), bg=CARD, fg=DIM,
+                                         font=_ui_font(9), bg=CARD, fg=DIM,
                                          wraplength=360, justify="left", anchor="w")
         self._lbl_preview_sub.grid(row=1, column=0, sticky="ew", pady=(4,0))
 
         meta = tk.Frame(top_row, bg=CARD)
         meta.grid(row=0, column=2, rowspan=2, sticky="e")
-        tk.Label(meta, textvariable=self._zoom_text, font=("Segoe UI",10,"bold"),
+        tk.Label(meta, textvariable=self._zoom_text, font=_ui_font(10, "bold"),
                  bg=CARD, fg=TEXT).pack(side="left", padx=(0,16))
-        tk.Label(meta, textvariable=self._resolution_text, font=("Segoe UI",9),
+        tk.Label(meta, textvariable=self._resolution_text, font=_ui_font(9),
                  bg=CARD, fg=DIM).pack(side="left")
 
         mode_row = tk.Frame(p, bg=CARD)
@@ -1766,46 +1797,46 @@ class App(TK_ROOT):
         self._btn_view_before = self._mkbtn(mode_row, self._t("before"),
                                             lambda: self._set_view_mode("before"),
                                             bg=CARD2, hover="#202938", pady=7,
-                                            font=("Segoe UI",10,"bold"))
+                                            font=_ui_font(10, "bold"))
         self._btn_view_before.pack(side="left")
         tk.Frame(mode_row, bg=CARD, width=8).pack(side="left")
         self._btn_view_after = self._mkbtn(mode_row, self._t("after"),
                                            lambda: self._set_view_mode("after"),
                                            bg=CARD2, hover="#202938", pady=7,
-                                           font=("Segoe UI",10,"bold"))
+                                           font=_ui_font(10, "bold"))
         self._btn_view_after.pack(side="left")
         tk.Frame(mode_row, bg=CARD, width=8).pack(side="left")
         self._btn_view_split = self._mkbtn(mode_row, self._t("split"),
                                            lambda: self._set_view_mode("split"),
                                            bg=CARD2, hover="#202938", pady=7,
-                                           font=("Segoe UI",10,"bold"))
+                                           font=_ui_font(10, "bold"))
         self._btn_view_split.pack(side="left")
         tk.Frame(mode_row, bg=CARD, width=16).pack(side="left")
         self._btn_undo_preview = self._mkbtn(mode_row, "↩", self._undo_manual_edit,
                                              bg=CARD2, hover="#202938", pady=7,
-                                             font=("Segoe UI",10,"bold"))
+                                             font=_ui_font(10, "bold"))
         self._btn_undo_preview.pack(side="left")
 
         zoom_bar = tk.Frame(mode_row, bg=CARD)
         zoom_bar.pack(side="right")
         self._mkbtn(zoom_bar, "-", lambda: self._change_preview_zoom(-0.2),
                     bg=CARD2, hover="#202938", pady=6,
-                    font=("Segoe UI",10,"bold")).pack(side="left")
+                    font=_ui_font(10, "bold")).pack(side="left")
         tk.Frame(zoom_bar, bg=CARD, width=8).pack(side="left")
         self._mkbtn(zoom_bar, "+", lambda: self._change_preview_zoom(0.2),
                     bg=CARD2, hover="#202938", pady=6,
-                    font=("Segoe UI",10,"bold")).pack(side="left")
+                    font=_ui_font(10, "bold")).pack(side="left")
         tk.Frame(zoom_bar, bg=CARD, width=8).pack(side="left")
         self._btn_fit = self._mkbtn(zoom_bar, self._t("fit"), self._fit_preview_zoom,
                                     bg=CARD2, hover="#202938", pady=6,
-                                    font=("Segoe UI",10,"bold"))
+                                    font=_ui_font(10, "bold"))
         self._btn_fit.pack(side="left")
 
         stage = tk.Frame(p, bg=CARD, highlightthickness=1, highlightbackground=BORDER_SOFT)
         stage.grid(row=2, column=0, sticky="nsew")
-        stage.columnconfigure(0, weight=0, minsize=260)
+        stage.columnconfigure(0, weight=1, minsize=200)
         stage.columnconfigure(1, weight=0, minsize=8)
-        stage.columnconfigure(2, weight=0, minsize=260)
+        stage.columnconfigure(2, weight=1, minsize=200)
         stage.rowconfigure(0, weight=1)
         self._preview_stage = stage
 
@@ -1823,7 +1854,7 @@ class App(TK_ROOT):
         bottom_bar = tk.Frame(p, bg=CARD)
         bottom_bar.grid(row=3, column=0, sticky="ew", pady=(14,0))
         bottom_bar.columnconfigure(0, weight=1)
-        self._lbl_info = tk.Label(bottom_bar, text="", font=("Segoe UI",9),
+        self._lbl_info = tk.Label(bottom_bar, text="", font=_ui_font(9),
                                   bg=CARD, fg=DIM)
         self._lbl_info.grid(row=0, column=0, sticky="w")
         self._set_view_mode("split")
@@ -1840,16 +1871,16 @@ class App(TK_ROOT):
         self._controls_header_text.grid(row=0, column=0, sticky="ew")
 
         self._lbl_controls_title = tk.Label(self._controls_header_text, text=self._t("adjustments"),
-                 font=("Segoe UI",12,"bold"), bg=CARD, fg=TEXT)
+                 font=_ui_font(12, "bold"), bg=CARD, fg=TEXT)
         self._lbl_controls_title.grid(row=0, column=0, sticky="w")
         self._lbl_controls_sub = tk.Label(self._controls_header_text, text=self._t("adjustments_sub"),
-                 font=("Segoe UI",9), bg=CARD, fg=DIM,
-                 wraplength=212, justify="left", anchor="w")
+                 font=_ui_font(9), bg=CARD, fg=DIM,
+                 wraplength=240, justify="left", anchor="w")
         self._lbl_controls_sub.grid(row=1, column=0, sticky="ew", pady=(6,0), padx=(4,0))
 
         self._btn_controls_toggle = self._mkbtn(
             header, "<<", self._toggle_controls_panel,
-            bg=CARD2, hover="#202938", pady=5, font=("Segoe UI",9,"bold"), padx=9
+            bg=CARD2, hover="#202938", pady=5, font=_ui_font(9, "bold"), padx=9
         )
         self._btn_controls_toggle.grid(row=0, column=1, sticky="ne", padx=(8,0))
 
@@ -1892,18 +1923,18 @@ class App(TK_ROOT):
 
         self._btn_refine = self._mkbtn(
             inner, self._t("refine_edges"), self._apply_retouch,
-            bg=CARD2, hover="#202938", pady=11, font=("Segoe UI",11,"bold")
+            bg=CARD2, hover="#202938", pady=11, font=_ui_font(11, "bold")
         )
         self._btn_refine.grid(row=7, column=0, sticky="ew", pady=(0,10))
 
         self._btn_export = self._mkbtn(
             inner, self._t("export_file"), self._export_current,
-            bg=CARD2, hover="#202938", pady=11, font=("Segoe UI",11,"bold")
+            bg=CARD2, hover="#202938", pady=11, font=_ui_font(11, "bold")
         )
         self._btn_export.grid(row=8, column=0, sticky="ew")
         self._btn_copy = self._mkbtn(
             inner, self._t("copy_image"), self._copy_current_to_clipboard,
-            bg=CARD2, hover="#202938", pady=11, font=("Segoe UI",11,"bold")
+            bg=CARD2, hover="#202938", pady=11, font=_ui_font(11, "bold")
         )
         self._btn_copy.grid(row=9, column=0, sticky="ew", pady=(10,0))
         self._btn_save = self._btn_export
@@ -1911,7 +1942,7 @@ class App(TK_ROOT):
         self._lbl_simple_note = tk.Label(
             inner,
             text=self._t("simple_note"),
-            font=("Segoe UI",9), bg=CARD, fg=MUTED, justify="left", wraplength=212
+            font=_ui_font(9), bg=CARD, fg=MUTED, justify="left", wraplength=240
         )
         self._lbl_simple_note.grid(row=10, column=0, sticky="ew", pady=(18,0), padx=(4,0))
         tk.Frame(inner, bg=CARD, height=14).grid(row=11, column=0, sticky="ew")
@@ -1933,10 +1964,10 @@ class App(TK_ROOT):
         top = tk.Frame(wrap, bg=CARD2, cursor="hand2")
         top.grid(row=0, column=0, sticky="ew")
         top.columnconfigure(0, weight=1)
-        lbl = tk.Label(top, text=self._t(label_key), font=("Segoe UI",10), bg=CARD2, fg=SOFT_TEXT, cursor="hand2")
+        lbl = tk.Label(top, text=self._t(label_key), font=_ui_font(10), bg=CARD2, fg=SOFT_TEXT, cursor="hand2")
         lbl.pack(side="left")
-        tk.Label(top, textvariable=var, font=("Segoe UI",10,"bold"), bg=CARD2, fg=TEXT).pack(side="right")
-        toggle = tk.Label(top, text="−" if expanded.get() else "+", font=("Segoe UI",11,"bold"),
+        tk.Label(top, textvariable=var, font=_ui_font(10, "bold"), bg=CARD2, fg=TEXT).pack(side="right")
+        toggle = tk.Label(top, text="−" if expanded.get() else "+", font=_ui_font(11, "bold"),
                           bg=CARD2, fg=DIM, cursor="hand2")
         toggle.pack(side="right", padx=(0,10))
         wrap._toggle_label = toggle
@@ -1946,7 +1977,7 @@ class App(TK_ROOT):
                  orient="horizontal", bg=CARD2, fg=TEXT,
                  highlightthickness=0, troughcolor="#243041",
                  activebackground=ACCENT, sliderrelief="flat", bd=0,
-                 font=("Segoe UI",8), showvalue=0).grid(row=0, column=0, sticky="ew", pady=(12,2))
+                 font=_ui_font(8), showvalue=0).grid(row=0, column=0, sticky="ew", pady=(12,2))
         wrap._body.grid(row=1, column=0, sticky="ew")
 
         def _toggle(_event=None, target=wrap):
@@ -1971,20 +2002,20 @@ class App(TK_ROOT):
 
         self._lbl_color_title = tk.Label(
             header, text=self._t("bg_colors_title"),
-            font=("Segoe UI", 10), bg=CARD2, fg=SOFT_TEXT
+            font=_ui_font(10), bg=CARD2, fg=SOFT_TEXT
         )
         self._lbl_color_title.pack(side="left")
 
         self._btn_refresh_colors = self._mkbtn(
             header, "⟳", self._refresh_color_swatches,
-            bg=CARD2, hover="#202938", pady=1, padx=6, font=("Segoe UI", 11)
+            bg=CARD2, hover="#202938", pady=1, padx=6, font=_ui_font(11)
         )
         self._btn_refresh_colors.pack(side="right")
 
         self._lbl_color_sub = tk.Label(
             card, text=self._t("bg_colors_sub"),
-            font=("Segoe UI", 8), bg=CARD2, fg=MUTED,
-            justify="left", wraplength=180, anchor="w"
+            font=_ui_font(8), bg=CARD2, fg=MUTED,
+            justify="left", wraplength=200, anchor="w"
         )
         self._lbl_color_sub.grid(row=1, column=0, sticky="ew", pady=(4, 0))
 
@@ -2012,10 +2043,10 @@ class App(TK_ROOT):
 
         # Tolerância
         self._lbl_color_tolerance = tk.Label(body, text=self._t("color_tolerance"),
-                                              font=("Segoe UI", 9), bg=CARD2, fg=SOFT_TEXT)
+                                              font=_ui_font(9), bg=CARD2, fg=SOFT_TEXT)
         self._lbl_color_tolerance.grid(row=0, column=0, sticky="w", pady=(10, 0))
         tk.Label(body, textvariable=self._color_key_tol,
-                 font=("Segoe UI", 9, "bold"), bg=CARD2, fg=TEXT).grid(
+                 font=_ui_font(9, "bold"), bg=CARD2, fg=TEXT).grid(
             row=0, column=2, sticky="e", padx=(6, 0), pady=(10, 0))
         tk.Scale(body, variable=self._color_key_tol, from_=10, to=100,
                  orient="horizontal", bg=CARD2, fg=TEXT,
@@ -2027,7 +2058,7 @@ class App(TK_ROOT):
         spill_row = tk.Frame(body, bg=CARD2)
         spill_row.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(6, 0))
         self._lbl_spill = tk.Label(spill_row, text=self._t("spill_suppress"),
-                                   font=("Segoe UI", 9), bg=CARD2, fg=SOFT_TEXT)
+                                   font=_ui_font(9), bg=CARD2, fg=SOFT_TEXT)
         self._lbl_spill.pack(side="left")
         tk.Checkbutton(spill_row, variable=self._spill_suppress,
                        bg=CARD2, fg=TEXT, selectcolor=CARD2,
@@ -2041,13 +2072,13 @@ class App(TK_ROOT):
 
         self._btn_reapply_colors = self._mkbtn(
             btn_row, self._t("reapply_colors"), self._apply_color_key_pass,
-            bg=CARD2, hover="#202938", pady=8, font=("Segoe UI", 10, "bold")
+            bg=CARD2, hover="#202938", pady=8, font=_ui_font(10, "bold")
         )
         self._btn_reapply_colors.grid(row=0, column=0, sticky="ew")
 
         self._btn_undo_color = self._mkbtn(
             btn_row, "↩", self._undo_manual_edit,
-            bg=CARD2, hover="#202938", pady=8, padx=10, font=("Segoe UI", 11)
+            bg=CARD2, hover="#202938", pady=8, padx=10, font=_ui_font(11)
         )
         self._btn_undo_color.grid(row=0, column=1, sticky="ew", padx=(6, 0))
 
@@ -2191,7 +2222,7 @@ class App(TK_ROOT):
 
         self._lbl_sticker_title = tk.Label(
             header, text=self._t("sticker_mode"),
-            font=("Segoe UI", 10, "bold"), bg=CARD2, fg=SOFT_TEXT
+            font=_ui_font(10, "bold"), bg=CARD2, fg=SOFT_TEXT
         )
         self._lbl_sticker_title.pack(side="left")
 
@@ -2208,8 +2239,8 @@ class App(TK_ROOT):
 
         self._lbl_sticker_sub = tk.Label(
             wrap, text=self._t("sticker_mode_sub"),
-            font=("Segoe UI", 8), bg=CARD2, fg=MUTED,
-            justify="left", wraplength=172, anchor="w"
+            font=_ui_font(8), bg=CARD2, fg=MUTED,
+            justify="left", wraplength=190, anchor="w"
         )
         self._lbl_sticker_sub.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(6, 0))
 
@@ -2230,15 +2261,15 @@ class App(TK_ROOT):
         header = tk.Frame(card, bg=CARD2, cursor="hand2")
         header.grid(row=0, column=0, columnspan=2, sticky="ew")
         self._lbl_resize_title = tk.Label(
-            header, text=self._t("output_size"), font=("Segoe UI",10), bg=CARD2, fg=SOFT_TEXT, cursor="hand2"
+            header, text=self._t("output_size"), font=_ui_font(10), bg=CARD2, fg=SOFT_TEXT, cursor="hand2"
         )
         self._lbl_resize_title.pack(side="left")
-        card._toggle_label = tk.Label(header, text="+", font=("Segoe UI",11,"bold"),
+        card._toggle_label = tk.Label(header, text="+", font=_ui_font(11, "bold"),
                                       bg=CARD2, fg=DIM, cursor="hand2")
         card._toggle_label.pack(side="right")
         self._lbl_resize_sub = tk.Label(
-            card._body, text=self._t("output_size_sub"), font=("Segoe UI",8),
-            bg=CARD2, fg=MUTED, justify="left", wraplength=160
+            card._body, text=self._t("output_size_sub"), font=_ui_font(8),
+            bg=CARD2, fg=MUTED, justify="left", wraplength=180
         )
         self._lbl_resize_sub.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(4,10))
 
@@ -2254,23 +2285,23 @@ class App(TK_ROOT):
             activeforeground=TEXT,
             highlightthickness=0,
             bd=0,
-            font=("Segoe UI",9, "bold"),
+            font=_ui_font(9, "bold"),
             anchor="w",
             justify="left",
-            wraplength=160,
+            wraplength=180,
         )
         self._resize_enable_chk.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0,10), in_=card._body)
 
         self._lbl_resize_orig = tk.Label(
-            card, text=self._t("original_select"), font=("Segoe UI",8),
-            bg=CARD2, fg=DIM, justify="left", wraplength=186
+            card, text=self._t("original_select"), font=_ui_font(8),
+            bg=CARD2, fg=DIM, justify="left", wraplength=200
         )
         self._lbl_resize_orig.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0,10), in_=card._body)
 
-        self._lbl_resize_width = tk.Label(card, text=self._t("width_label"), font=("Segoe UI",8),
+        self._lbl_resize_width = tk.Label(card, text=self._t("width_label"), font=_ui_font(8),
                                           bg=CARD2, fg=MUTED)
         self._lbl_resize_width.grid(row=3, column=0, sticky="w", in_=card._body)
-        self._lbl_resize_height = tk.Label(card, text=self._t("height_label"), font=("Segoe UI",8),
+        self._lbl_resize_height = tk.Label(card, text=self._t("height_label"), font=_ui_font(8),
                                            bg=CARD2, fg=MUTED)
         self._lbl_resize_height.grid(row=3, column=1, sticky="w", padx=(8,0), in_=card._body)
 
@@ -2278,7 +2309,7 @@ class App(TK_ROOT):
             card, textvariable=self._resize_width, justify="center", relief="flat", bd=0,
             bg="#121C2A", fg=TEXT, insertbackground=TEXT, disabledbackground="#121C2A",
             disabledforeground=MUTED, highlightthickness=1, highlightbackground=BORDER,
-            highlightcolor=ACCENT, font=("Segoe UI",10)
+            highlightcolor=ACCENT, font=_ui_font(10)
         )
         self._entry_resize_width.grid(row=4, column=0, sticky="ew", in_=card._body)
 
@@ -2290,17 +2321,17 @@ class App(TK_ROOT):
             right_col, textvariable=self._resize_height, justify="center", relief="flat", bd=0,
             bg="#121C2A", fg=TEXT, insertbackground=TEXT, disabledbackground="#121C2A",
             disabledforeground=MUTED, highlightthickness=1, highlightbackground=BORDER,
-            highlightcolor=ACCENT, font=("Segoe UI",10)
+            highlightcolor=ACCENT, font=_ui_font(10)
         )
         self._entry_resize_height.grid(row=0, column=0, sticky="ew")
 
         self._btn_resize_lock = self._mkbtn(
             card, "🔒", self._toggle_resize_lock, bg=CARD, hover="#202938",
-            pady=5, font=("Segoe UI",9,"bold"), padx=8
+            pady=5, font=_ui_font(9, "bold"), padx=8
         )
         self._btn_resize_lock.grid(row=5, column=0, columnspan=2, sticky="w", pady=(10,0), in_=card._body)
         self._lbl_resize_lock = tk.Label(
-            card, text=self._t("lock_ratio"), font=("Segoe UI",8),
+            card, text=self._t("lock_ratio"), font=_ui_font(8),
             bg=CARD2, fg=MUTED
         )
         self._lbl_resize_lock.grid(row=5, column=0, columnspan=2, sticky="w", padx=(46,0), pady=(10,0), in_=card._body)
@@ -2311,7 +2342,7 @@ class App(TK_ROOT):
         # Botão exportar original redimensionado
         self._btn_export_resized_orig = self._mkbtn(
             card._body, self._t("export_resized_original"), self._export_original_resized,
-            bg=CARD, hover="#202938", pady=8, font=("Segoe UI", 9, "bold")
+            bg=CARD, hover="#202938", pady=8, font=_ui_font(9, "bold")
         )
         self._btn_export_resized_orig.grid(row=7, column=0, columnspan=2, sticky="ew", pady=(8, 0))
 
@@ -2337,14 +2368,14 @@ class App(TK_ROOT):
         header = tk.Frame(card, bg=CARD2, cursor="hand2")
         header.grid(row=0, column=0, columnspan=2, sticky="ew")
         self._lbl_manual_title = tk.Label(header, text=self._t("manual_tools"),
-                                          font=("Segoe UI",10), bg=CARD2, fg=SOFT_TEXT, cursor="hand2")
+                                          font=_ui_font(10), bg=CARD2, fg=SOFT_TEXT, cursor="hand2")
         self._lbl_manual_title.pack(side="left")
-        card._toggle_label = tk.Label(header, text="+", font=("Segoe UI",11,"bold"),
+        card._toggle_label = tk.Label(header, text="+", font=_ui_font(11, "bold"),
                                       bg=CARD2, fg=DIM, cursor="hand2")
         card._toggle_label.pack(side="right")
         self._lbl_manual_sub = tk.Label(card._body, text=self._t("manual_tools_sub"),
-                                        font=("Segoe UI",8), bg=CARD2, fg=MUTED,
-                                        justify="left", wraplength=160)
+                                        font=_ui_font(8), bg=CARD2, fg=MUTED,
+                                        justify="left", wraplength=180)
         self._lbl_manual_sub.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(4,10))
 
         self._process_selected_chk = tk.Checkbutton(
@@ -2358,10 +2389,10 @@ class App(TK_ROOT):
             activeforeground=TEXT,
             highlightthickness=0,
             bd=0,
-            font=("Segoe UI",9, "bold"),
+            font=_ui_font(9, "bold"),
             anchor="w",
             justify="left",
-            wraplength=160,
+            wraplength=180,
         )
         self._process_selected_chk.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0,10), in_=card._body)
 
@@ -2376,19 +2407,19 @@ class App(TK_ROOT):
             activeforeground=TEXT,
             highlightthickness=0,
             bd=0,
-            font=("Segoe UI",9, "bold"),
+            font=_ui_font(9, "bold"),
             anchor="w",
         )
         self._hair_protect_chk.grid(row=2, column=0, columnspan=2, sticky="ew", in_=card._body)
         self._lbl_hair_sub = tk.Label(card, text=self._t("hair_protect_sub"),
-                                      font=("Segoe UI",8), bg=CARD2, fg=DIM,
-                                      justify="left", wraplength=160)
+                                      font=_ui_font(8), bg=CARD2, fg=DIM,
+                                      justify="left", wraplength=180)
         self._lbl_hair_sub.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(4,10), in_=card._body)
 
-        self._lbl_manual_tool = tk.Label(card, text=self._t("manual_tool"), font=("Segoe UI",8),
+        self._lbl_manual_tool = tk.Label(card, text=self._t("manual_tool"), font=_ui_font(8),
                                          bg=CARD2, fg=MUTED)
         self._lbl_manual_tool.grid(row=4, column=0, sticky="w", in_=card._body)
-        self._lbl_brush_shape = tk.Label(card, text=self._t("brush_shape"), font=("Segoe UI",8),
+        self._lbl_brush_shape = tk.Label(card, text=self._t("brush_shape"), font=_ui_font(8),
                                          bg=CARD2, fg=MUTED)
         self._lbl_brush_shape.grid(row=4, column=1, sticky="w", padx=(8,0), in_=card._body)
 
@@ -2399,29 +2430,29 @@ class App(TK_ROOT):
         self._brush_shape_combo.grid(row=5, column=1, sticky="ew", padx=(8,0), in_=card._body)
         self._brush_shape_combo.bind("<<ComboboxSelected>>", self._on_brush_shape_change)
 
-        self._lbl_brush_size = tk.Label(card, text=self._t("brush_size"), font=("Segoe UI",8),
+        self._lbl_brush_size = tk.Label(card, text=self._t("brush_size"), font=_ui_font(8),
                                         bg=CARD2, fg=MUTED)
         self._lbl_brush_size.grid(row=6, column=0, sticky="w", pady=(10,0), in_=card._body)
-        tk.Label(card, textvariable=self._brush_size, font=("Segoe UI",9,"bold"),
+        tk.Label(card, textvariable=self._brush_size, font=_ui_font(9, "bold"),
                  bg=CARD2, fg=TEXT).grid(row=6, column=1, sticky="e", pady=(10,0), in_=card._body)
         tk.Scale(card._body, variable=self._brush_size, from_=2, to=80,
                  orient="horizontal", bg=CARD2, fg=TEXT,
                  highlightthickness=0, troughcolor="#243041",
                  activebackground=ACCENT, sliderrelief="flat", bd=0,
-                 font=("Segoe UI",8), showvalue=0).grid(row=7, column=0, columnspan=2, sticky="ew", pady=(8,2))
+                 font=_ui_font(8), showvalue=0).grid(row=7, column=0, columnspan=2, sticky="ew", pady=(8,2))
 
         history_row = tk.Frame(card._body, bg=CARD2)
         history_row.grid(row=8, column=0, columnspan=2, sticky="ew", pady=(8,2))
         self._btn_undo = self._mkbtn(history_row, "Undo", self._undo_manual_edit,
-                                     bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                     bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_undo.pack(side="left")
         tk.Frame(history_row, bg=CARD2, width=8).pack(side="left")
         self._btn_redo = self._mkbtn(history_row, "Redo", self._redo_manual_edit,
-                                     bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                     bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_redo.pack(side="left")
 
-        self._lbl_manual_tip = tk.Label(card, text=self._t("manual_tip"), font=("Segoe UI",8),
-                                        bg=CARD2, fg=DIM, justify="left", wraplength=160)
+        self._lbl_manual_tip = tk.Label(card, text=self._t("manual_tip"), font=_ui_font(8),
+                                        bg=CARD2, fg=DIM, justify="left", wraplength=180)
         self._lbl_manual_tip.grid(row=9, column=0, columnspan=2, sticky="ew", pady=(8,0), in_=card._body)
 
         card._body.grid(row=1, column=0, columnspan=2, sticky="ew")
@@ -2443,46 +2474,46 @@ class App(TK_ROOT):
         self._quick_tools_menu = menu
 
         title = tk.Label(menu, text=self._t("quick_tools"), bg=CARD2, fg=SOFT_TEXT,
-                         font=("Segoe UI",8,"bold"))
+                         font=_ui_font(8, "bold"))
         title.grid(row=0, column=0, columnspan=4, sticky="w", pady=(0,6))
         self._quick_tools_title = title
 
         self._btn_quick_move = self._mkbtn(menu, "Move", self._toggle_preview_nav_mode,
-                                           bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                           bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_quick_move.grid(row=1, column=0, sticky="ew")
         self._btn_quick_restore = self._mkbtn(menu, "Restore", lambda: self._set_manual_tool("restore"),
-                                              bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                              bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_quick_restore.grid(row=1, column=1, sticky="ew", padx=(6,0))
         self._btn_quick_cut = self._mkbtn(menu, "Cut", lambda: self._set_manual_tool("cut"),
-                                          bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                          bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_quick_cut.grid(row=1, column=2, sticky="ew", padx=(6,0))
         self._btn_quick_off = self._mkbtn(menu, "Off", lambda: self._set_manual_tool("none"),
-                                          bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                          bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_quick_off.grid(row=1, column=3, sticky="ew", padx=(6,0))
 
         self._btn_shape_round = self._mkbtn(menu, "O", lambda: self._set_brush_shape("round"),
-                                            bg=CARD, hover="#202938", pady=3, font=("Segoe UI",8,"bold"), padx=7)
+                                            bg=CARD, hover="#202938", pady=3, font=_ui_font(8, "bold"), padx=7)
         self._btn_shape_round.grid(row=2, column=0, sticky="ew", pady=(6,0))
         self._btn_shape_square = self._mkbtn(menu, "[]", lambda: self._set_brush_shape("square"),
-                                             bg=CARD, hover="#202938", pady=3, font=("Segoe UI",8,"bold"), padx=7)
+                                             bg=CARD, hover="#202938", pady=3, font=_ui_font(8, "bold"), padx=7)
         self._btn_shape_square.grid(row=2, column=1, sticky="ew", padx=(6,0), pady=(6,0))
         self._btn_shape_triangle = self._mkbtn(menu, "/\\", lambda: self._set_brush_shape("triangle"),
-                                               bg=CARD, hover="#202938", pady=3, font=("Segoe UI",8,"bold"), padx=7)
+                                               bg=CARD, hover="#202938", pady=3, font=_ui_font(8, "bold"), padx=7)
         self._btn_shape_triangle.grid(row=2, column=2, sticky="ew", padx=(6,0), pady=(6,0))
         self._btn_shape_pencil = self._mkbtn(menu, "..", lambda: self._set_brush_shape("pencil"),
-                                             bg=CARD, hover="#202938", pady=3, font=("Segoe UI",8,"bold"), padx=7)
+                                             bg=CARD, hover="#202938", pady=3, font=_ui_font(8, "bold"), padx=7)
         self._btn_shape_pencil.grid(row=2, column=3, sticky="ew", padx=(6,0), pady=(6,0))
 
         self._btn_quick_undo = self._mkbtn(menu, "Undo", self._undo_manual_edit,
-                                           bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                           bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_quick_undo.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(6,0))
         self._btn_quick_redo = self._mkbtn(menu, "Redo", self._redo_manual_edit,
-                                           bg=CARD, hover="#202938", pady=4, font=("Segoe UI",8,"bold"), padx=8)
+                                           bg=CARD, hover="#202938", pady=4, font=_ui_font(8, "bold"), padx=8)
         self._btn_quick_redo.grid(row=3, column=2, columnspan=2, sticky="ew", padx=(6,0), pady=(6,0))
 
         self._btn_quick_launcher = self._mkbtn(
             wrap, self._t("quick_tools_open"), self._toggle_quick_tools,
-            bg="#1E2A3B", hover="#26384E", pady=6, font=("Segoe UI",9,"bold"), padx=10
+            bg="#1E2A3B", hover="#26384E", pady=6, font=_ui_font(9, "bold"), padx=10
         )
         self._btn_quick_launcher.pack(anchor="e")
         self._apply_quick_tools_layout()
@@ -2573,7 +2604,7 @@ class App(TK_ROOT):
 
         if not self._files:
             empty = tk.Label(self._files_inner, text=self._t("no_images_yet"),
-                             font=("Segoe UI",10), bg=CARD2, fg=DIM,
+                             font=_ui_font(10), bg=CARD2, fg=DIM,
                              justify="center", pady=26)
             empty.pack(fill="x")
             return
@@ -2593,11 +2624,11 @@ class App(TK_ROOT):
         thumb.config(image=thumb_img)
         thumb.image = thumb_img
 
-        name = tk.Label(row, text=self._truncate_label_text(Path(path).name, 18), font=("Segoe UI",10,"bold"),
+        name = tk.Label(row, text=self._truncate_label_text(Path(path).name, 18), font=_ui_font(10, "bold"),
                         bg=CARD2, fg=TEXT, anchor="w")
         name.grid(row=0, column=1, sticky="ew", padx=(10,0))
 
-        status = tk.Label(row, text=self._file_status_text(path), font=("Segoe UI",8),
+        status = tk.Label(row, text=self._file_status_text(path), font=_ui_font(8),
                           bg=CARD2, fg=DIM, anchor="w")
         status.grid(row=1, column=1, sticky="ew", padx=(10,0), pady=(3,0))
 
@@ -2714,7 +2745,7 @@ class App(TK_ROOT):
         f = tk.Frame(parent, bg=CARD, highlightthickness=1,
                      highlightbackground=BORDER_SOFT)
         f._title_key = title_key
-        f._title_label = tk.Label(f, text=self._t(title_key), font=("Segoe UI",8,"bold"),
+        f._title_label = tk.Label(f, text=self._t(title_key), font=_ui_font(8, "bold"),
                                   bg=CARD, fg=ACCENT_GOLD)
         f._title_label.pack(pady=(12,6))
         cv = tk.Canvas(f, bg=PREVIEW_BG, highlightthickness=0, bd=0, cursor="crosshair")
@@ -2731,14 +2762,14 @@ class App(TK_ROOT):
         f._offset_y = 0
         f._pan_anchor = None
         f._txt_id = cv.create_text(10, 10, text=self._t("no_image"),
-                                   fill=DIM, font=("Segoe UI",9), anchor="nw")
+                                   fill=DIM, font=_ui_font(9), anchor="nw")
         f._loading_rect = cv.create_rectangle(0, 0, 0, 0, fill="#08111e", stipple="gray50",
                                               outline="", state="hidden")
         f._loading_text = cv.create_text(0, 0, text=self._t("processing"),
-                                         fill=TEXT, font=("Segoe UI",13,"bold"),
+                                         fill=TEXT, font=_ui_font(13, "bold"),
                                          state="hidden")
         f._loading_sub = cv.create_text(0, 0, text="Applying background removal",
-                                        fill=DIM, font=("Segoe UI",9),
+                                        fill=DIM, font=_ui_font(9),
                                         state="hidden")
         cv.bind("<Configure>", lambda e, ff=f: self._cv_resize(ff))
         cv.bind("<MouseWheel>", lambda e, ff=f: self._on_preview_wheel(ff, e))
@@ -2896,11 +2927,11 @@ class App(TK_ROOT):
         ctrl.pack(fill="x", padx=8, pady=8)
 
         tk.Label(ctrl, text="Retoque Manual de Bordas",
-                 font=("Segoe UI",11,"bold"), bg=CARD2, fg=TEXT).pack(
+                 font=_ui_font(11, "bold"), bg=CARD2, fg=TEXT).pack(
                      anchor="w", padx=14, pady=(12,2))
         tk.Label(ctrl,
                  text="Ajuste fino para remover bordas brancas restantes, sem reprocessar tudo.",
-                 font=("Segoe UI",9), bg=CARD2, fg=DIM,
+                 font=_ui_font(9), bg=CARD2, fg=DIM,
                  wraplength=700, justify="left").pack(anchor="w", padx=14)
 
         grid = tk.Frame(ctrl, bg=CARD2)
@@ -2908,7 +2939,7 @@ class App(TK_ROOT):
         grid.columnconfigure(1, weight=1)
 
         def row_scale(label, var, from_, to, r):
-            tk.Label(grid, text=label, font=("Segoe UI",9),
+            tk.Label(grid, text=label, font=_ui_font(9),
                      bg=CARD2, fg=TEXT).grid(row=r, column=0, sticky="w", pady=4)
             frm = tk.Frame(grid, bg=CARD2)
             frm.grid(row=r, column=1, sticky="ew", padx=(10,0))
@@ -2916,8 +2947,8 @@ class App(TK_ROOT):
                      orient="horizontal", bg=CARD2, fg=TEXT,
                      highlightthickness=0, troughcolor=CARD,
                      activebackground=ACCENT_ALT, sliderrelief="flat", bd=0,
-                     font=("Segoe UI",7)).pack(side="left", fill="x", expand=True)
-            tk.Label(frm, textvariable=var, font=("Segoe UI",8),
+                     font=_ui_font(7)).pack(side="left", fill="x", expand=True)
+            tk.Label(frm, textvariable=var, font=_ui_font(8),
                      bg=CARD2, fg=DIM, width=4).pack(side="left")
 
         row_scale("Limiar de branco (quanto remover):", self._thr_ret, 180, 255, 0)
@@ -2927,7 +2958,7 @@ class App(TK_ROOT):
         btns.pack(fill="x", padx=14, pady=(4,12))
         self._mkbtn(btns, "Aplicar retoque",
                     self._apply_retouch, bg=ACCENT, hover="#86dcff", pady=8,
-                    font=("Segoe UI",10,"bold")).pack(side="left")
+                    font=_ui_font(10, "bold")).pack(side="left")
         tk.Frame(btns, bg=CARD2, width=8).pack(side="left")
         self._mkbtn(btns, "Salvar retocada",
                     self._save_retouched, bg=CARD, hover="#22304a",
@@ -3095,21 +3126,21 @@ class App(TK_ROOT):
         self._btn_fit.config(text=self._t("fit"))
         self._lbl_controls_title.config(text=self._t("adjustments"))
         self._lbl_controls_sub.config(text=self._t("adjustments_sub"))
-        self._lbl_controls_sub.config(wraplength=212)
+        self._lbl_controls_sub.config(wraplength=240)
         for key, lbl in self._slider_label_refs.items():
             lbl.config(text=self._t(key))
         if hasattr(self, "_lbl_color_title"):
             self._lbl_color_title.config(text=self._t("bg_colors_title"))
-            self._lbl_color_sub.config(text=self._t("bg_colors_sub"), wraplength=180)
+            self._lbl_color_sub.config(text=self._t("bg_colors_sub"), wraplength=200)
             self._lbl_color_tolerance.config(text=self._t("color_tolerance"))
             self._lbl_spill.config(text=self._t("spill_suppress"))
             self._btn_reapply_colors.config(text=self._t("reapply_colors"))
         if hasattr(self, "_lbl_sticker_title"):
             self._lbl_sticker_title.config(text=self._t("sticker_mode"))
-            self._lbl_sticker_sub.config(text=self._t("sticker_mode_sub"), wraplength=172)
+            self._lbl_sticker_sub.config(text=self._t("sticker_mode_sub"), wraplength=190)
         if hasattr(self, "_lbl_resize_title"):
             self._lbl_resize_title.config(text=self._t("output_size"))
-            self._lbl_resize_sub.config(text=self._t("output_size_sub"), wraplength=160)
+            self._lbl_resize_sub.config(text=self._t("output_size_sub"), wraplength=180)
             self._resize_enable_chk.config(text=self._t("resize_enable"))
             self._lbl_resize_width.config(text=self._t("width_label"))
             self._lbl_resize_height.config(text=self._t("height_label"))
@@ -3119,14 +3150,14 @@ class App(TK_ROOT):
             self._btn_export_resized_orig.config(text=self._t("export_resized_original"))
         if hasattr(self, "_lbl_manual_title"):
             self._lbl_manual_title.config(text=self._t("manual_tools"))
-            self._lbl_manual_sub.config(text=self._t("manual_tools_sub_short"), wraplength=160)
+            self._lbl_manual_sub.config(text=self._t("manual_tools_sub_short"), wraplength=180)
             self._process_selected_chk.config(text=self._t("process_selected_only"))
             self._hair_protect_chk.config(text=self._t("hair_protect"))
-            self._lbl_hair_sub.config(text=self._t("hair_protect_sub"), wraplength=160)
+            self._lbl_hair_sub.config(text=self._t("hair_protect_sub"), wraplength=180)
             self._lbl_manual_tool.config(text=self._t("manual_tool"))
             self._lbl_brush_shape.config(text=self._t("brush_shape"))
             self._lbl_brush_size.config(text=self._t("brush_size"))
-            self._lbl_manual_tip.config(text=self._t("manual_tip"), wraplength=160)
+            self._lbl_manual_tip.config(text=self._t("manual_tip"), wraplength=180)
             self._btn_undo.config(text=self._t("undo"))
             self._btn_redo.config(text=self._t("redo"))
             self._sync_manual_tool_combo()
@@ -3135,7 +3166,7 @@ class App(TK_ROOT):
         self._btn_refine.config(text=self._t("refine_edges"))
         self._btn_export.config(text=self._t("export_file"))
         self._btn_copy.config(text=self._t("copy_image"))
-        self._lbl_simple_note.config(text=self._t("simple_note"), wraplength=212)
+        self._lbl_simple_note.config(text=self._t("simple_note"), wraplength=240)
         if hasattr(self, "_btn_controls_toggle"):
             self._btn_controls_toggle.config(
                 text=">>" if self._controls_collapsed else "<<"
@@ -3395,7 +3426,7 @@ class App(TK_ROOT):
         self._rounded_rect(btn, 6, 8, w - 6, h - 8, 18, fill=pal["outer"], outline="")
         self._rounded_rect(btn, 8, 10, w - 8, h - 10, 16, fill=pal["inner"], outline="")
         btn.create_text(w // 2, h // 2, text=btn._glow_text, fill=pal["text"],
-                        font=("Segoe UI", 13, "bold"))
+                        font=_ui_font(13, "bold"))
 
     def _glow_button_event(self, btn, state):
         if not btn._glow_enabled or btn._glow_loading:
@@ -3528,7 +3559,7 @@ class App(TK_ROOT):
 
     # ── Helpers ───────────────────────────────────────────────
     def _mkbtn(self, parent, text, cmd, bg=CARD2, fg=TEXT,
-               hover=None, pady=6, font=("Segoe UI",9), padx=10):
+               hover=None, pady=6, font=_ui_font(9), padx=10):
         btn = tk.Button(parent, text=text, command=cmd,
                         bg=bg, fg=fg,
                         activebackground=hover or bg, activeforeground=fg,
