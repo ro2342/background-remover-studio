@@ -275,15 +275,18 @@ def check_and_update(parent=None) -> None:
         remote_sha = _get_remote_sha()
         local_sha  = _read_local_sha()
 
-        if local_sha == remote_sha:
+        if local_sha is None:
+            # SHA desconhecido (instalação nova ou sem .git) — apenas registra
+            # a versão atual sem perguntar nada. Na próxima abertura o updater
+            # vai comparar corretamente.
             _save_local_sha(remote_sha)
+            return
+
+        if local_sha == remote_sha:
             return  # já está atualizado
 
         # Descobrir quais arquivos mudaram
-        if local_sha:
-            changed = _get_changed_files(local_sha, remote_sha)
-        else:
-            changed = list(TRACKED_FILES)  # SHA desconhecido → baixa tudo
+        changed = _get_changed_files(local_sha, remote_sha)
 
         if not changed:
             _save_local_sha(remote_sha)

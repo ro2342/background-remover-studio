@@ -217,6 +217,12 @@ else
     ok "Repositório clonado em $INSTALL_DIR"
 fi
 
+# Grava o SHA atual no .last_commit para o updater não pedir update logo após instalar
+CURRENT_SHA=$(git -C "$INSTALL_DIR" rev-parse HEAD 2>/dev/null || echo "")
+if [ -n "$CURRENT_SHA" ]; then
+    echo "$CURRENT_SHA" > "$INSTALL_DIR/src/.last_commit"
+fi
+
 # ── Cria ambiente virtual Python ──────────────────────────────────────────────
 step "Configurando ambiente Python..."
 
