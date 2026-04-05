@@ -10,6 +10,21 @@
 
 ## English
 
+## Quick Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ro2342/background-remover-studio/main/install.sh | bash
+```
+
+That's it. The script will detect your distro, install all dependencies, set up a Python virtual environment, and add the app to your system menu.
+
+**To uninstall:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/ro2342/background-remover-studio/main/uninstall-system.sh | bash
+```
+
+---
+
 A free, local, and privacy-first background remover. Everything runs on your machine — no internet required after the first model download, no account, no upload limits.
 
 ### What changed in this fork
@@ -173,6 +188,23 @@ Linux port maintained in this fork.
 Fork Linux do [sabnck/background-remover-studio](https://github.com/sabnck/background-remover-studio).  
 Todo o crédito pelo app original é do **Henrique Fernandes** ([@oportunipt](https://instagram.com/oportunipt)).  
 Este fork porta o app para **Fedora, Ubuntu, Debian, Arch** e outras distribuições Linux.
+
+---
+
+## Português BR
+
+## Instalação Rápida
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ro2342/background-remover-studio/main/install.sh | bash
+```
+
+Só isso. O script detecta sua distro, instala todas as dependências, configura o ambiente Python e adiciona o app ao menu do sistema.
+
+**Para desinstalar:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/ro2342/background-remover-studio/main/uninstall-system.sh | bash
+```
 
 ---
 
