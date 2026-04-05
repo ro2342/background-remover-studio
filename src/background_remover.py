@@ -389,6 +389,90 @@ def make_checkerboard(size: tuple[int, int], sq=12) -> Image.Image:
     arr = np.where(pattern[..., None] == 0, dark, light)
     return Image.fromarray(arr.astype(np.uint8), "RGBA")
 
+# ── Seletores de arquivo nativos (GNOME/KDE/fallback tkinter) ─────────────────
+
+def _detect_desktop() -> str:
+    """Retorna 'gnome', 'kde' ou 'other'."""
+    de = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
+    if "gnome" in de or "unity" in de or "budgie" in de or "pantheon" in de:
+        return "gnome"
+    if "kde" in de or "plasma" in de:
+        return "kde"
+    return "other"
+
+
+def native_open_files(title: str, filetypes: list, parent=None) -> tuple:
+    """Abre seletor de arquivos nativo. Retorna tupla de caminhos (pode ser vazia)."""
+    # Monta filtros para zenity: "Images | *.png *.jpg ..."
+    if shutil.which("zenity"):
+        patterns = []
+        mime_patterns = []
+        for label, exts in filetypes:
+            if exts == "*.*":
+                continue
+            for ext in exts.split():
+                patterns.append(ext)
+        cmd = [
+            "zenity", "--file-selection",
+            "--multiple", "--separator=\n",
+            "--title", title,
+        ]
+        if patterns:
+            cmd += ["--file-filter", f"Images | {' '.join(patterns)}"]
+            cmd += ["--file-filter", "All files | *"]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0 and result.stdout.strip():
+                return tuple(result.stdout.strip().splitlines())
+        except Exception:
+            pass
+
+    if shutil.which("kdialog"):
+        # kdialog usa formato: "Images (*.png *.jpg ...)"
+        patterns = []
+        for label, exts in filetypes:
+            if exts != "*.*":
+                patterns.extend(exts.split())
+        filter_str = f"Images ({' '.join(patterns)})" if patterns else "*"
+        cmd = ["kdialog", "--getopenfilename", str(Path.home()), filter_str,
+               "--title", title, "--multiple"]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0 and result.stdout.strip():
+                return tuple(result.stdout.strip().split("\n"))
+        except Exception:
+            pass
+
+    # Fallback: tkinter
+    from tkinter import filedialog as _fd
+    return _fd.askopenfilenames(title=title, filetypes=filetypes, parent=parent) or ()
+
+
+def native_open_directory(title: str, parent=None) -> str:
+    """Abre seletor de pasta nativo. Retorna string com o caminho ou ''."""
+    if shutil.which("zenity"):
+        cmd = ["zenity", "--file-selection", "--directory", "--title", title]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+        except Exception:
+            pass
+
+    if shutil.which("kdialog"):
+        cmd = ["kdialog", "--getexistingdirectory", str(Path.home()), "--title", title]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0 and result.stdout.strip():
+                return result.stdout.strip()
+        except Exception:
+            pass
+
+    # Fallback: tkinter
+    from tkinter import filedialog as _fd
+    return _fd.askdirectory(title=title, parent=parent) or ""
+
+
 def copy_image_to_clipboard(img: Image.Image):
     """Copy image to clipboard. Supports Wayland (wl-copy) and X11 (xclip)."""
     rgba = sanitizar_rgb_transparente(img.convert("RGBA"))
@@ -4135,10 +4219,11 @@ class App(TK_ROOT):
     # ── Arquivos ──────────────────────────────────────────────
     def _add_files(self, files=None):
         if files is None:
-            files = filedialog.askopenfilenames(
+            files = native_open_files(
                 title=self._t("select_images"),
                 filetypes=[(self._t("images_filetype"),"*.png *.jpg *.jpeg *.webp *.bmp *.tiff *.tif"),
-                           (self._t("all_files"),"*.*")])
+                           (self._t("all_files"),"*.*")],
+                parent=self)
         added = 0
         first_new_idx = None
         for f in files:
@@ -4156,7 +4241,7 @@ class App(TK_ROOT):
                 self.after(0, lambda idx=first_new_idx: self._select_index(idx))
 
     def _add_folder(self):
-        pasta = filedialog.askdirectory(title=self._t("select_folder"))
+        pasta = native_open_directory(title=self._t("select_folder"), parent=self)
         if pasta:
             self._add_files([str(p) for p in Path(pasta).iterdir()
                              if p.suffix.lower() in EXTS])
@@ -4186,7 +4271,7 @@ class App(TK_ROOT):
         self._refresh_history_buttons()
 
     def _choose_out(self):
-        pasta = filedialog.askdirectory(title=self._t("choose_export_folder"))
+        pasta = native_open_directory(title=self._t("choose_export_folder"), parent=self)
         if pasta:
             self._out_dir = pasta
             self._lbl_out.config(text=str(Path(pasta)))

@@ -193,6 +193,17 @@ else
     ok "xclip instalado (copiar imagem para área de transferência)"
 fi
 
+# Zenity (seletor de arquivos nativo do GNOME)
+if ! command -v zenity &>/dev/null && ! command -v kdialog &>/dev/null; then
+    echo -e "  ${DIM}Instalando zenity (seletor de arquivos nativo)...${RESET}"
+    case "$PKG_MANAGER" in
+        dnf)    sudo dnf install -y zenity &>/dev/null ;;
+        apt)    sudo apt-get install -y zenity &>/dev/null ;;
+        pacman) sudo pacman -S --noconfirm zenity &>/dev/null ;;
+    esac
+fi
+ok "seletor de arquivos nativo instalado"
+
 # ── Clona ou atualiza o repositório ───────────────────────────────────────────
 step "Baixando Background Remover Studio..."
 
