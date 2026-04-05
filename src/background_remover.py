@@ -1551,6 +1551,8 @@ class App(TK_ROOT):
 
     # ── Build UI ──────────────────────────────────────────────
     def _build(self):
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
         s = ttk.Style(self)
         s.theme_use("clam")
         s.configure("Studio.Horizontal.TProgressbar", troughcolor=CARD2,

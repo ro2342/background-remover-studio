@@ -236,28 +236,17 @@ class Assistant(tk.Tk):
             script = str(MAIN_FILE.resolve())
             icon = str(ICON_FILE.resolve()) if ICON_FILE.exists() else "image-x-generic"
             work = str(APP_DIR.resolve())
-            entry = (
-                "[Desktop Entry]
-"
-                "Version=1.0
-"
-                "Type=Application
-"
-                "Name=Background Remover Studio
-"
-                "Comment=Free local background remover — no uploads, no account
-"
-                f"Exec={python} {script}
-"
-                f"Icon={icon}
-"
-                f"Path={work}
-"
-                "Terminal=false
-"
-                "Categories=Graphics;Photography;
-"
-            )
+            entry = f"""[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Background Remover Studio
+Comment=Free local background remover — no uploads, no account
+Exec={python} {script}
+Icon={icon}
+Path={work}
+Terminal=false
+Categories=Graphics;Photography;
+"""
             desktop_file.write_text(entry, encoding="utf-8")
             desktop_file.chmod(0o755)
             subprocess.run(
