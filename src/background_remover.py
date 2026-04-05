@@ -1591,9 +1591,9 @@ class App(TK_ROOT):
         shell.pack(fill="both", expand=True)
         self._shell = shell
         # Colunas responsivas: painéis laterais encolhem em telas menores
-        _left_min   = max(180, min(220, sw // 7))
+        _left_min   = max(240, min(270, sw // 6))
         _center_min = max(320, sw - _left_min * 2 - 200)
-        _right_min  = max(240, min(286, sw // 6))
+        _right_min  = max(320, min(360, sw // 5))
         shell.columnconfigure(0, weight=0, minsize=_left_min)
         shell.columnconfigure(1, weight=1, minsize=_center_min)
         shell.columnconfigure(2, weight=0, minsize=_right_min)
@@ -3109,7 +3109,7 @@ class App(TK_ROOT):
         self._lbl_mode_sub.config(text=self._t("simple_mode_sub"))
         self._lbl_left_title.config(text=self._t("your_images"))
         self._lbl_left_sub.config(text=self._t("your_images_sub"))
-        self._lbl_left_sub.config(wraplength=230 if self._lang == "en" else 250)
+        self._lbl_left_sub.config(wraplength=250 if self._lang == "en" else 270)
         self._btn_add.config(text=self._t("add"))
         self._btn_folder.config(text=self._t("folder"))
         self._btn_remove_file.config(text=self._t("remove"))
@@ -3128,21 +3128,21 @@ class App(TK_ROOT):
         self._btn_fit.config(text=self._t("fit"))
         self._lbl_controls_title.config(text=self._t("adjustments"))
         self._lbl_controls_sub.config(text=self._t("adjustments_sub"))
-        self._lbl_controls_sub.config(wraplength=240)
+        self._lbl_controls_sub.config(wraplength=290)
         for key, lbl in self._slider_label_refs.items():
             lbl.config(text=self._t(key))
         if hasattr(self, "_lbl_color_title"):
             self._lbl_color_title.config(text=self._t("bg_colors_title"))
-            self._lbl_color_sub.config(text=self._t("bg_colors_sub"), wraplength=200)
+            self._lbl_color_sub.config(text=self._t("bg_colors_sub"), wraplength=260)
             self._lbl_color_tolerance.config(text=self._t("color_tolerance"))
             self._lbl_spill.config(text=self._t("spill_suppress"))
             self._btn_reapply_colors.config(text=self._t("reapply_colors"))
         if hasattr(self, "_lbl_sticker_title"):
             self._lbl_sticker_title.config(text=self._t("sticker_mode"))
-            self._lbl_sticker_sub.config(text=self._t("sticker_mode_sub"), wraplength=190)
+            self._lbl_sticker_sub.config(text=self._t("sticker_mode_sub"), wraplength=260)
         if hasattr(self, "_lbl_resize_title"):
             self._lbl_resize_title.config(text=self._t("output_size"))
-            self._lbl_resize_sub.config(text=self._t("output_size_sub"), wraplength=180)
+            self._lbl_resize_sub.config(text=self._t("output_size_sub"), wraplength=260)
             self._resize_enable_chk.config(text=self._t("resize_enable"))
             self._lbl_resize_width.config(text=self._t("width_label"))
             self._lbl_resize_height.config(text=self._t("height_label"))
@@ -3152,14 +3152,14 @@ class App(TK_ROOT):
             self._btn_export_resized_orig.config(text=self._t("export_resized_original"))
         if hasattr(self, "_lbl_manual_title"):
             self._lbl_manual_title.config(text=self._t("manual_tools"))
-            self._lbl_manual_sub.config(text=self._t("manual_tools_sub_short"), wraplength=180)
+            self._lbl_manual_sub.config(text=self._t("manual_tools_sub_short"), wraplength=260)
             self._process_selected_chk.config(text=self._t("process_selected_only"))
             self._hair_protect_chk.config(text=self._t("hair_protect"))
-            self._lbl_hair_sub.config(text=self._t("hair_protect_sub"), wraplength=180)
+            self._lbl_hair_sub.config(text=self._t("hair_protect_sub"), wraplength=260)
             self._lbl_manual_tool.config(text=self._t("manual_tool"))
             self._lbl_brush_shape.config(text=self._t("brush_shape"))
             self._lbl_brush_size.config(text=self._t("brush_size"))
-            self._lbl_manual_tip.config(text=self._t("manual_tip"), wraplength=180)
+            self._lbl_manual_tip.config(text=self._t("manual_tip"), wraplength=260)
             self._btn_undo.config(text=self._t("undo"))
             self._btn_redo.config(text=self._t("redo"))
             self._sync_manual_tool_combo()
@@ -3168,7 +3168,7 @@ class App(TK_ROOT):
         self._btn_refine.config(text=self._t("refine_edges"))
         self._btn_export.config(text=self._t("export_file"))
         self._btn_copy.config(text=self._t("copy_image"))
-        self._lbl_simple_note.config(text=self._t("simple_note"), wraplength=240)
+        self._lbl_simple_note.config(text=self._t("simple_note"), wraplength=280)
         if hasattr(self, "_btn_controls_toggle"):
             self._btn_controls_toggle.config(
                 text=">>" if self._controls_collapsed else "<<"
@@ -3596,18 +3596,18 @@ class App(TK_ROOT):
         collapsed = getattr(self, "_controls_collapsed", False)
 
         if total < 1180:
-            left = 210
-            right = 56 if collapsed else 250
+            left = 240
+            right = 56 if collapsed else 320
             center = 360
             outer_pad = 12
         elif total < 1360:
-            left = 220
-            right = 56 if collapsed else 270
+            left = 260
+            right = 56 if collapsed else 340
             center = 420
             outer_pad = 14
         else:
-            left = 232
-            right = 56 if collapsed else 286
+            left = 280
+            right = 56 if collapsed else 360
             center = 480
             outer_pad = 16
 
